@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparateur 104 — Plukon Mouscron</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{
+  --vert:#046A38; --vert-fonce:#034a27; --vert-clair:#e8f3ec;
+  --gris:#5b6660; --bord:#dde3df; --fond:#f7f9f8; --blanc:#fff; --encre:#1b211d;
+  --rouge:#b3261e; --rouge-fond:#fdecea; --rouge-bord:#f3c6c2;
+  --ambre:#8a5a00; --ambre-fond:#fff6e5; --ambre-bord:#f0dcb0;
+  --bleu:#1f5e8c; --bleu-fond:#eaf2f8; --bleu-bord:#c9dced;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --vert:#2f9e69; --vert-fonce:#0d2f20; --vert-clair:#12291f;
+    --gris:#9aa79f; --bord:#2b332e; --fond:#0f1311; --blanc:#161b18; --encre:#e6ebe7;
+    --rouge:#e8877c; --rouge-fond:#2a1512; --rouge-bord:#5a2a24;
+    --ambre:#d7a54a; --ambre-fond:#261d0c; --ambre-bord:#4c3a16;
+    --bleu:#7fb4dc; --bleu-fond:#11202b; --bleu-bord:#2a4a60;
+  }
+}
+:root[data-theme="dark"]{
+  --vert:#2f9e69; --vert-fonce:#0d2f20; --vert-clair:#12291f;
+  --gris:#9aa79f; --bord:#2b332e; --fond:#0f1311; --blanc:#161b18; --encre:#e6ebe7;
+  --rouge:#e8877c; --rouge-fond:#2a1512; --rouge-bord:#5a2a24;
+  --ambre:#d7a54a; --ambre-fond:#261d0c; --ambre-bord:#4c3a16;
+  --bleu:#7fb4dc; --bleu-fond:#11202b; --bleu-bord:#2a4a60;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.5}
+header{background:var(--vert);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px}
+header h1{margin:0;font-size:17px;font-weight:600}
+header .site{margin-left:auto;font-size:13px;opacity:.85}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+
+.carte{background:var(--blanc);border:1px solid var(--bord);border-radius:10px;padding:18px;margin-bottom:18px}
+.carte h2{margin:0 0 2px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.pastille{background:var(--vert-clair);color:var(--vert);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:600}
+.horodatage{margin-left:auto;font-size:12px;color:var(--gris);font-weight:400}
+.aide{margin:0 0 12px;color:var(--gris);font-size:12.5px;font-style:italic}
+
+.ligne-fichier{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.btn{background:var(--blanc);border:1px solid var(--bord);border-radius:7px;padding:8px 14px;font-size:13px;
+  font-weight:500;cursor:pointer;color:var(--encre);font-family:inherit}
+.btn:hover{border-color:var(--vert);color:var(--vert)}
+.btn:focus-visible{outline:2px solid var(--vert);outline-offset:2px}
+.btn.plein{background:var(--vert);border-color:var(--vert);color:#fff}
+.btn.plein:hover{background:var(--vert-fonce);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.nomfichier{color:var(--gris);font-size:12.5px}
+input[type=file]{display:none}
+select{padding:7px 10px;border:1px solid var(--bord);border-radius:7px;font-size:13px;
+  font-family:inherit;background:var(--blanc);color:var(--encre);max-width:100%}
+select:focus{outline:2px solid var(--vert);outline-offset:-1px}
+textarea{width:100%;height:120px;resize:vertical;font-family:ui-monospace,Consolas,monospace;font-size:12px;
+  line-height:1.45;padding:10px;border:1px solid var(--bord);border-radius:7px;background:var(--blanc);color:var(--encre)}
+textarea:focus{outline:2px solid var(--vert);outline-offset:-1px;border-color:var(--vert)}
+
+.depot{border:2px dashed var(--bord);border-radius:9px;padding:22px 16px;text-align:center;cursor:pointer;
+  background:var(--blanc);transition:border-color .12s,background .12s;margin-bottom:12px}
+.depot:hover,.depot.survol{border-color:var(--vert);background:var(--vert-clair)}
+.depot:focus-visible{outline:2px solid var(--vert);outline-offset:2px}
+.depot b{display:block;font-size:14.5px;margin-bottom:3px}
+.depot span{color:var(--gris);font-size:12.5px}
+
+.note{margin-top:12px;font-size:13px;padding:10px 14px;border-radius:7px}
+.note.rouge{background:var(--rouge-fond);color:var(--rouge);border:1px solid var(--rouge-bord)}
+.note.ambre{background:var(--ambre-fond);color:var(--ambre);border:1px solid var(--ambre-bord)}
+.note.verte{background:var(--vert-clair);color:var(--vert);border:1px solid var(--bord)}
+.note.bleue{background:var(--bleu-fond);color:var(--bleu);border:1px solid var(--bleu-bord)}
+
+.compteurs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.compteur{background:var(--blanc);border:1px solid var(--bord);border-radius:10px;padding:14px 16px;text-align:center}
+.compteur .n{font-size:26px;font-weight:700;display:block;line-height:1.05}
+.compteur .sous{font-size:12.5px;color:var(--gris);margin-top:4px}
+.compteur.ajout .n{color:var(--vert)} .compteur.retrait .n{color:var(--rouge)}
+.compteur.modif .n{color:var(--ambre)} .compteur.solde{background:var(--vert-clair);border-color:var(--vert-clair)}
+.compteur.solde .n{color:var(--vert);font-size:22px} .compteur.solde .sous{color:var(--vert)}
+
+.bloc{background:var(--blanc);border:1px solid var(--bord);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.bloc .titre{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:9px 14px;
+  background:var(--vert-clair);border-bottom:1px solid var(--bord);font-size:13.5px}
+.bloc .titre .code{font-family:ui-monospace,Consolas,monospace;font-weight:700;color:var(--vert)}
+.bloc .titre .lib{font-weight:600}
+.bloc .titre .solde{margin-left:auto;font-weight:700;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td{border-bottom:1px solid var(--bord);padding:8px 14px;vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.statut{width:1%;white-space:nowrap}
+.etiq{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid currentColor}
+.etiq.ajout{color:var(--vert);background:var(--vert-clair)}
+.etiq.retrait{color:var(--rouge);background:var(--rouge-fond)}
+.etiq.modif{color:var(--ambre);background:var(--ambre-fond)}
+.etiq.prod{color:var(--bleu);background:var(--bleu-fond)}
+.gris{color:var(--gris);font-weight:400;font-size:12.5px}
+.apercu{max-height:320px;overflow:auto;border:1px solid var(--bord);border-radius:8px;margin-top:12px}
+.apercu table{font-size:12.5px}
+.apercu td{padding:6px 10px}
+.apercu thead th{position:sticky;top:0;background:var(--vert-clair);text-align:left;font-weight:600;
+  color:var(--vert);padding:7px 10px;border-bottom:1px solid var(--bord);font-size:12px}
+.apercu thead th.num{text-align:right}
+.mono{font-family:ui-monospace,Consolas,monospace;font-weight:600}
+pre.recap{white-space:pre-wrap;background:var(--blanc);border:1px solid var(--bord);border-radius:8px;
+  padding:16px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;line-height:1.55;margin:0;
+  color:var(--encre);overflow-x:auto}
+.annot{color:var(--gris);font-style:italic;font-size:12.5px;margin-top:2px}
+.detail{margin-top:2px}
+.hausse{color:var(--vert);font-weight:700} .baisse{color:var(--rouge);font-weight:700}
+.fleche{color:var(--gris);padding:0 4px}
+details{margin-top:14px}
+summary{cursor:pointer;color:var(--gris);font-size:13px;padding:6px 0}
+summary:focus-visible{outline:2px solid var(--vert);outline-offset:2px}
+.barre{margin:0 0 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.cache{display:none !important}
+.tourne{display:inline-block;width:13px;height:13px;border:2px solid var(--bord);border-top-color:var(--vert);
+  border-radius:50%;animation:t .7s linear infinite;vertical-align:-2px;margin-right:7px}
+@keyframes t{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.tourne{animation-duration:2.5s}}
+.entete-impression{display:none}
+
+@media print{
+  @page{size:A4;margin:11mm}
+  body{background:#fff;color:#000;font-size:10.5pt}
+  header,.sans-impression,details{display:none !important}
+  .wrap{max-width:none;padding:0}
+  .entete-impression{display:block;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:10px}
+  .entete-impression h2{margin:0;font-size:14pt}
+  .entete-impression p{margin:3px 0 0;font-size:10pt}
+  .compteurs{grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+  .compteur{border:1px solid #999;padding:6px}
+  .compteur .n{font-size:16pt}
+  .bloc{break-inside:avoid;border:1px solid #999}
+  .bloc .titre{background:#eee}
+  .etiq{border:1px solid #666}
+  #carteRecap h2{font-size:12pt;margin-bottom:6px}
+  pre.recap{border:none;padding:0;font-size:9.5pt;line-height:1.5}
+  body[data-impression="fiche"] #carteRecap{display:none}
+  body[data-impression="recap"] #ecarts,
+  body[data-impression="recap"] .compteurs{display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Comparateur 104</h1>
+  <span class="site">Plukon Food Group — Mouscron</span>
+</header>
+
+<div class="wrap">
+
+  <section class="carte sans-impression">
+    <h2>Version de référence <span class="pastille" id="cptRef">aucune</span><span class="horodatage" id="horoRef"></span></h2>
+    <p class="aide">La dernière version validée est gardée dans ce navigateur. Elle n'est remplacée que quand tu cliques sur « Définir comme nouvelle référence ».</p>
+    <div class="ligne-fichier" id="barreRef"></div>
+    <div class="note bleue cache" id="avertStockage"></div>
+  </section>
+
+  <section class="carte sans-impression">
+    <h2>Nouvelle version <span class="pastille" id="cptNew">aucune</span></h2>
+    <p class="aide">Listing 104 imprimé en PDF depuis l'ERP. Lecture faite dans le navigateur, rien n'est envoyé ailleurs.</p>
+    <div class="depot" id="depot" tabindex="0" role="button" aria-label="Déposer le nouveau listing">
+      <b>Déposer le PDF du listing</b>
+      <span>ou cliquer pour choisir un fichier</span>
+    </div>
+    <details>
+      <summary>Coller le texte du listing à la place</summary>
+      <textarea id="colle" placeholder="Coller ici le texte du listing 104"></textarea>
+      <div class="ligne-fichier" style="margin-top:10px"><button class="btn" id="btnColle">Lire le texte collé</button></div>
+    </details>
+    <div class="ligne-fichier" style="margin-top:10px">
+      <button class="btn" id="btnDemo">Voir un exemple de récap</button>
+      <span class="nomfichier">deux versions fictives, pour voir le rendu</span>
+    </div>
+    <input type="file" id="fichier" accept="application/pdf">
+    <input type="file" id="fichierBase" accept="application/pdf">
+    <div class="note bleue cache" id="etat"></div>
+    <div id="apercuZone"></div>
+  </section>
+
+  <div id="resultat" class="cache">
+    <div class="entete-impression" id="enteteImpression"></div>
+    <div id="alertes"></div>
+    <div class="compteurs" id="compteurs"></div>
+    <div class="barre sans-impression" id="actions"></div>
+    <section class="carte" id="carteRecap">
+      <h2>Récap des écarts</h2>
+      <p class="aide sans-impression">Une ligne par écart, avec la quantité, l'article et le client. C'est ce que copie le bouton « Copier le récap ».</p>
+      <pre class="recap" id="recap"></pre>
+    </section>
+    <div id="ecarts"></div>
+  </div>
+
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const CLE = "cmp104:historique:v1";
+const MAX_HIST = 5;
+const $ = id => document.getElementById(id);
+
+/* ---------- stockage : localStorage si possible, sinon mémoire de l'onglet ---------- */
+let memoire = [];        // secours quand le navigateur bloque le stockage
+let stockageOK = true;
+
+function histoire(){
+  try{
+    const r = localStorage.getItem(CLE);
+    if(r){ const h = JSON.parse(r); if(h && h.length) return h; }
+  }catch(e){ stockageOK = false; }
+  return memoire;
+}
+function enregistrer(h){
+  memoire = h.slice(0, MAX_HIST);
+  try{ localStorage.setItem(CLE, JSON.stringify(memoire)); }
+  catch(e){ stockageOK = false; }
+  return true;
+}
+function toutEffacer(){
+  memoire = [];
+  try{ localStorage.removeItem(CLE); }catch(e){}
+}
+
+/* ---------- lecture PDF ---------- */
+async function pdfEnLignes(fichier){
+  const buf = await fichier.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+  const sortie = [];
+  for(let p=1; p<=pdf.numPages; p++){
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    const rangs = [];
+    tc.items.forEach(it=>{
+      if(!it.str || !it.str.trim()) return;
+      const y = it.transform[5], x = it.transform[4];
+      let r = rangs.find(o => Math.abs(o.y - y) <= 2.5);
+      if(!r){ r = {y, items:[]}; rangs.push(r); }
+      r.items.push({x, s:it.str});
+    });
+    rangs.sort((a,b)=> b.y - a.y);
+    rangs.forEach(r=>{
+      r.items.sort((a,b)=> a.x - b.x);
+      const l = r.items.map(i=>i.s).join(" ").replace(/\s+/g," ").trim();
+      if(l) sortie.push(l);
+    });
+  }
+  return sortie;
+}
+
+/* ---------- analyse du listing ---------- */
+const RX_CLIENT  = /^(\d{1,6})\s+(.+?)\s+(\d{5,7})\s+([\d.,]+)\s+([\d.,]+)\s+(KR|DS|ST|KG|PL)\b\s*(.*)$/;
+const RX_ARTICLE = /^(\d{3,5})\s+([A-Za-zÀ-ÿ].*)$/;
+const RX_SAUT    = /^(Plukon\s|FA\d|Artikel\s+Klant|Nog te$|produceren|KPL$|TOTAAL:|Laaddatum|\d+\s+(Nog te produceren|Bestelling))/i;
+
+const nbr = s => {
+  const v = parseFloat(String(s == null ? "" : s).replace(/\s/g,"").replace(/\.(?=\d{3})/g,"").replace(",","."));
+  return isNaN(v) ? 0 : v;
+};
+
+function analyser(lignes){
+  const doc = {print:"", heure:"", laadDe:"", laadA:"", listing:"", lignes:[], articles:new Map()};
+  let art = null, derniere = null; const vues = new Map();
+
+  for(const brute of lignes){
+    const l = brute.trim(); if(!l) continue;
+    let m;
+    if((m = l.match(/printdatum\s+([\d.\/-]+)/i)))  doc.print = doc.print || m[1];
+    if((m = l.match(/(\d{2}:\d{2}:\d{2})/)))        doc.heure = doc.heure || m[1];
+    if((m = l.match(/Laaddatum\s+van\/tot\s+([\d.\/-]+)\s*\/\s*([\d.\/-]+)/i))){ doc.laadDe = doc.laadDe || m[1]; doc.laadA = doc.laadA || m[2]; }
+    if((m = l.match(/^(\d{2,3})\s+(?:Nog te produceren|Bestelling)/i))) doc.listing = doc.listing || m[1];
+
+    if((m = l.match(RX_CLIENT))){
+      let cle = `${art ? art.code : "?"}|${m[1]}|${m[3]}`;
+      const n = (vues.get(cle) || 0) + 1; vues.set(cle, n);
+      if(n > 1) cle += `#${n}`;
+      derniere = {cle, article: art ? art.code : "?", libelle: art ? art.lib : "",
+        clientCode:m[1], client:m[2].trim(), ordre:m[3],
+        commande:nbr(m[4]), reste:nbr(m[5]), unite:m[6], site:(m[7]||"").trim(), notes:[]};
+      doc.lignes.push(derniere);
+      continue;
+    }
+    if(RX_SAUT.test(l)) continue;
+    if((m = l.match(RX_ARTICLE))){
+      art = {code:m[1], lib:m[2].trim()};
+      if(!doc.articles.has(art.code)) doc.articles.set(art.code, art.lib);
+      derniere = null; continue;
+    }
+    if(derniere) derniere.notes.push(l);
+  }
+  return doc;
+}
+
+const empaqueter = (doc, nom) => ({
+  id: Date.now() + "-" + Math.random().toString(36).slice(2,7),
+  nom, enregistreLe: new Date().toISOString(),
+  print:doc.print, heure:doc.heure, laadDe:doc.laadDe, laadA:doc.laadA, listing:doc.listing,
+  articles:[...doc.articles.entries()], lignes:doc.lignes
+});
+const ouvrir = p => ({...p, articles:new Map(p.articles || [])});
+
+/* ---------- comparaison ---------- */
+const LIB_CHAMP = {commande:"Quantité commandée", site:"Site de production", unite:"Unité", notes:"Annotation", reste:"Reste à produire"};
+
+function comparer(base, neuf){
+  const B = new Map(base.lignes.map(r=>[r.cle,r])), N = new Map(neuf.lignes.map(r=>[r.cle,r]));
+  const ecarts = [];
+  for(const [k,n] of N){
+    const b = B.get(k);
+    if(!b){ ecarts.push({type:"ajout", l:n}); continue; }
+    const ch = [];
+    if(b.commande !== n.commande) ch.push({c:"commande", de:b.commande, a:n.commande});
+    if(b.site !== n.site)         ch.push({c:"site", de:b.site || "Mouscron", a:n.site || "Mouscron"});
+    if(b.unite !== n.unite)       ch.push({c:"unite", de:b.unite, a:n.unite});
+    const bn = b.notes.join(" · "), nn = n.notes.join(" · ");
+    if(bn !== nn)                 ch.push({c:"notes", de:bn || "—", a:nn || "—"});
+    if(ch.length)                 ecarts.push({type:"modif", l:n, avant:b, ch});
+    else if(b.reste !== n.reste)  ecarts.push({type:"prod", l:n, avant:b, ch:[{c:"reste", de:b.reste, a:n.reste}]});
+    else                          ecarts.push({type:"idem", l:n});
+  }
+  for(const [k,b] of B) if(!N.has(k)) ecarts.push({type:"retrait", l:b});
+  return ecarts;
+}
+
+/* ---------- affichage ---------- */
+const ech = s => String(s == null ? "" : s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = n => new Intl.NumberFormat("fr-BE").format(n);
+const signe = n => (n > 0 ? "+" : "") + fmt(n);
+const deltaDe = e => e.type==="ajout" ? e.l.commande
+                  : e.type==="retrait" ? -e.l.commande
+                  : (e.ch && e.ch.find(x=>x.c==="commande") ? e.ch.find(x=>x.c==="commande").a - e.ch.find(x=>x.c==="commande").de : 0);
+
+function afficherEcarts(ecarts, base, neuf){
+  const aj = ecarts.filter(e=>e.type==="ajout"), re = ecarts.filter(e=>e.type==="retrait");
+  const mo = ecarts.filter(e=>e.type==="modif"), pr = ecarts.filter(e=>e.type==="prod");
+  const id = ecarts.filter(e=>e.type==="idem");
+
+  const solde = {};
+  ecarts.forEach(e=>{ const d = deltaDe(e); if(d) solde[e.l.unite] = (solde[e.l.unite]||0) + d; });
+  const soldeTxt = Object.keys(solde).length
+    ? Object.entries(solde).map(([u,v])=>`${signe(v)} ${u}`).join("<br>") : "0";
+
+  $("compteurs").innerHTML = `
+    <div class="compteur ajout"><span class="n">${aj.length}</span><div class="sous">ligne${aj.length>1?"s":""} ajoutée${aj.length>1?"s":""}</div></div>
+    <div class="compteur retrait"><span class="n">${re.length}</span><div class="sous">ligne${re.length>1?"s":""} retirée${re.length>1?"s":""}</div></div>
+    <div class="compteur modif"><span class="n">${mo.length}</span><div class="sous">ligne${mo.length>1?"s":""} modifiée${mo.length>1?"s":""}</div></div>
+    <div class="compteur solde"><span class="n">${soldeTxt}</span><div class="sous">solde commandé</div></div>`;
+
+  const reels = [...aj, ...re, ...mo];
+  const parArt = new Map();
+  reels.forEach(e=>{ if(!parArt.has(e.l.article)) parArt.set(e.l.article, []); parArt.get(e.l.article).push(e); });
+
+  let html = "";
+  if(!reels.length) html += `<div class="note verte">Aucun écart de commande entre les deux versions.</div>`;
+
+  [...parArt.keys()].sort().forEach(code=>{
+    const liste = parArt.get(code);
+    const lib = neuf.articles.get(code) || base.articles.get(code) || liste[0].l.libelle || "";
+    const net = liste.reduce((s,e)=> s + deltaDe(e), 0);
+    html += `<div class="bloc"><div class="titre">
+        <span class="code">${ech(code)}</span><span class="lib">${ech(lib)}</span>` +
+        (net ? `<span class="solde ${net>0?"hausse":"baisse"}">${signe(net)} ${ech(liste[0].l.unite)}</span>` : ``) +
+      `</div><table><tbody>${liste.map(rangee).join("")}</tbody></table></div>`;
+  });
+
+  if(pr.length){
+    html += `<details><summary>${pr.length} ligne(s) où seul le « nog te produceren » a bougé — avancement production, pas un changement de commande</summary>
+      <div class="bloc"><table><tbody>${pr.map(rangee).join("")}</tbody></table></div></details>`;
+  }
+  if(id.length){
+    html += `<details><summary>${id.length} ligne(s) identiques</summary><div class="bloc"><table><tbody>` +
+      id.map(e=>`<tr><td class="statut"></td><td><b>${ech(e.l.article)}</b> ${ech(e.l.client)} <span class="gris">${ech(e.l.ordre)}</span></td>
+        <td class="num">${fmt(e.l.commande)} ${ech(e.l.unite)}</td><td class="num"></td></tr>`).join("") +
+      `</tbody></table></div></details>`;
+  }
+  $("ecarts").innerHTML = html;
+}
+
+function rangee(e){
+  const l = e.l;
+  const et = {ajout:["ajout","Ajout"], retrait:["retrait","Retiré"], modif:["modif","Modifié"], prod:["prod","Production"]}[e.type];
+  let corps = `<b>${ech(l.client)}</b> <span class="gris">${ech(l.clientCode)} · commande ${ech(l.ordre)}</span>`;
+  let qte = "", delta = "";
+
+  if(e.type === "ajout"){
+    qte = `${fmt(l.commande)} ${ech(l.unite)}`;
+    delta = `<span class="hausse">${signe(l.commande)}</span>`;
+    if(l.site) corps += `<div class="detail">Produit à ${ech(l.site)}</div>`;
+    if(l.notes.length) corps += `<div class="annot">${ech(l.notes.join(" · "))}</div>`;
+  } else if(e.type === "retrait"){
+    qte = `<span class="gris">${fmt(l.commande)} ${ech(l.unite)}</span>`;
+    delta = `<span class="baisse">${signe(-l.commande)}</span>`;
+    corps += `<div class="detail gris">Ligne absente de la nouvelle version</div>`;
+  } else {
+    e.ch.forEach(c=>{
+      if(c.c === "commande" || c.c === "reste"){
+        const d = c.a - c.de;
+        if(c.c === "commande"){
+          qte = `${fmt(c.de)}<span class="fleche">→</span>${fmt(c.a)} ${ech(l.unite)}`;
+          delta = `<span class="${d>0?"hausse":"baisse"}">${signe(d)}</span>`;
+        } else {
+          qte = `<span class="gris">${fmt(c.de)}<span class="fleche">→</span>${fmt(c.a)} ${ech(l.unite)}</span>`;
+          corps += `<div class="detail gris">${LIB_CHAMP.reste} — commande inchangée à ${fmt(l.commande)} ${ech(l.unite)}</div>`;
+        }
+      } else {
+        corps += `<div class="detail">${LIB_CHAMP[c.c]} : ${ech(c.de)}<span class="fleche">→</span><b>${ech(c.a)}</b></div>`;
+      }
+    });
+    if(!qte) qte = `<span class="gris">${fmt(l.commande)} ${ech(l.unite)}</span>`;
+  }
+  return `<tr><td class="statut"><span class="etiq ${et[0]}">${et[1]}</span></td><td>${corps}</td>
+    <td class="num">${qte}</td><td class="num">${delta}</td></tr>`;
+}
+
+/* ---------- aperçu de ce qui a été lu ---------- */
+function apercu(doc, nom){
+  const tot = {};
+  doc.lignes.forEach(l=> tot[l.unite] = (tot[l.unite] || 0) + l.commande);
+  const totTxt = Object.entries(tot).map(([u,v])=>`${fmt(v)} ${u}`).join(" · ") || "—";
+  $("apercuZone").innerHTML = `
+    <div class="note verte" style="margin-top:14px">
+      <b>${ech(nom)}</b> — ${doc.lignes.length} lignes, ${doc.articles.size} articles,
+      ${ech(totTxt)} commandés. Listing ${ech(doc.listing || "?")},
+      impression ${ech(doc.print)} ${ech(doc.heure)}, chargement ${ech(doc.laadDe)}.
+    </div>
+    <details open>
+      <summary>Vérifier les ${doc.lignes.length} lignes lues</summary>
+      <div class="apercu"><table>
+        <thead><tr><th>Article</th><th>Client</th><th class="num">Commandé</th><th class="num">Reste</th><th>Site / note</th></tr></thead>
+        <tbody>${doc.lignes.map(l=>`<tr>
+          <td><span class="mono">${ech(l.article)}</span></td>
+          <td>${ech(l.client)} <span class="gris">${ech(l.ordre)}</span></td>
+          <td class="num">${fmt(l.commande)} ${ech(l.unite)}</td>
+          <td class="num gris">${fmt(l.reste)}</td>
+          <td class="gris">${ech([l.site, l.notes.join(" · ")].filter(Boolean).join(" — "))}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+    </details>`;
+}
+
+/* ---------- exemple intégré ---------- */
+const DEMO_BASE = `Plukon Mouscron SA printdatum 16.09.26
+FA4496 104 0 40 1 THT tijd KR 05:15:54
+104 Bestelling artikel/klant per KP
+Laaddatum van/tot 16.09.26 / 16.09.26
+3006 POULET 1300 G NON BRIDE BAC
+813 SEVERN POULTRY LTD 245026 48 48 KR
+TOTAAL: 48 KR
+3008 POULET 1500 G NON BRIDE BAC
+25658 DIBS DISTRIBUTION LIMITED 245033 48 48 KR
+TOTAAL: 48 KR
+3502 HAUT CUISSE DE POULET DEJOINTE 10 KG CARTON NEUTRE
+1082 PETER THOMPSON GROUP LTD 244871 150 150 DS Maasmechelen
+3x PMM 15/09
+TOTAAL: 150 DS
+3569 CUISSE DE POULET 10 KG CARTON ALTA
+13403 BIGARD DIST. CANNES 245115 150 150 DS
+13410 BIGARD DIST. LYON 245170 200 200 DS
+TOTAAL: 350 DS
+9696 FILET SIMPLE 8 X 1000 G MAP CARTON OUVERT - FR
+1114 DUC FRANCE CHAILLEY 245095 420 420 DS
+TOTAAL: 420 DS`;
+
+const DEMO_NEUF = `Plukon Mouscron SA printdatum 16.09.26
+FA4496 104 0 40 1 THT tijd KR 09:42:11
+104 Bestelling artikel/klant per KP
+Laaddatum van/tot 16.09.26 / 16.09.26
+3006 POULET 1300 G NON BRIDE BAC
+813 SEVERN POULTRY LTD 245026 96 96 KR
+TOTAAL: 96 KR
+3008 POULET 1500 G NON BRIDE BAC
+25658 DIBS DISTRIBUTION LIMITED 245033 48 48 KR
+15170 FAAZ FOODS 245210 72 72 KR
+FRAIS DU JOUR
+TOTAAL: 120 KR
+3502 HAUT CUISSE DE POULET DEJOINTE 10 KG CARTON NEUTRE
+1082 PETER THOMPSON GROUP LTD 244871 150 150 DS
+3x PMM 15/09
+TOTAAL: 150 DS
+3569 CUISSE DE POULET 10 KG CARTON ALTA
+13403 BIGARD DIST. CANNES 245115 100 100 DS
+13410 BIGARD DIST. LYON 245170 200 200 DS
+prio 1
+TOTAAL: 300 DS`;
+
+function demo(){
+  baseAdHoc = empaqueter(analyser(DEMO_BASE.split("\n")), "exemple — version de 05:15");
+  const doc = analyser(DEMO_NEUF.split("\n"));
+  courant = empaqueter(doc, "exemple — version de 09:42");
+  $("cptNew").textContent = `${doc.lignes.length} lignes`;
+  apercu(doc, "exemple — version de 09:42");
+  etat("Exemple de démonstration sur deux versions fictives. Dépose ton PDF pour repartir sur du réel.", "bleue");
+  lancer();
+}
+
+/* ---------- état ---------- */
+let courant = null, baseAdHoc = null;
+
+function majRef(){
+  const h = histoire();
+  if(!h.length){
+    $("cptRef").textContent = "aucune";
+    $("horoRef").textContent = "";
+    $("barreRef").innerHTML = `<span class="nomfichier">Le premier listing déposé deviendra la référence.</span>
+      <button class="btn" id="btnBaseFichier">Charger une base depuis un fichier</button>`;
+  } else {
+    const r = h[0];
+    $("cptRef").textContent = `${r.lignes.length} lignes`;
+    $("horoRef").textContent = `impression ${r.print} ${r.heure} · chargement ${r.laadDe}`;
+    $("barreRef").innerHTML = `
+      <span class="nomfichier">Comparer contre</span>
+      <select id="selBase">${h.map((x,i)=>`<option value="${x.id}">${ech(x.print)} ${ech(x.heure)} — ${ech(x.nom)}${i===0?" (dernière)":""}</option>`).join("")}</select>
+      <button class="btn" id="btnBaseFichier">Autre fichier…</button>
+      <button class="btn" id="btnVider">Effacer l'historique</button>`;
+  }
+  const a = $("btnBaseFichier"); if(a) a.onclick = ()=> $("fichierBase").click();
+  const b = $("btnVider"); if(b) b.onclick = ()=>{
+    if(confirm("Effacer les versions enregistrées ?")){ toutEffacer(); baseAdHoc = null; majRef(); }
+  };
+  const s = $("selBase"); if(s) s.onchange = ()=>{ baseAdHoc = null; if(courant) lancer(); };
+  const av = $("avertStockage");
+  if(av) av.className = stockageOK ? "note bleue cache" : "note ambre";
+  if(av && !stockageOK) av.textContent =
+    "Ce navigateur ne garde rien d'une ouverture à l'autre (fichier ouvert hors ligne). La référence tient le temps de l'onglet. Une fois l'app en ligne, elle sera conservée.";
+}
+
+function base(){
+  if(baseAdHoc) return baseAdHoc;
+  const h = histoire(); if(!h.length) return null;
+  const s = $("selBase");
+  return (s && h.find(x=>x.id===s.value)) || h[0];
+}
+
+function etat(msg, classe){
+  const el = $("etat");
+  if(!msg){ el.classList.add("cache"); return; }
+  el.className = "note " + (classe || "bleue");
+  el.innerHTML = msg;
+}
+
+const cleTemps = d => {
+  const p = (d.print || "").split(".");
+  return (p.length === 3 ? `20${p[2]}-${p[1]}-${p[0]}` : "") + " " + (d.heure || "");
+};
+
+function lancer(){
+  const b0 = base();
+  if(!b0){ $("resultat").classList.add("cache"); return; }
+  const b = ouvrir(b0), n = ouvrir(courant);
+  const ecarts = comparer(b, n);
+
+  let al = "";
+  if(b.laadDe && n.laadDe && b.laadDe !== n.laadDe)
+    al += `<div class="note ambre">Dates de chargement différentes : ${ech(b.laadDe)} contre ${ech(n.laadDe)}. Vérifie que c'est bien le même jour de livraison.</div>`;
+  if(cleTemps(n).trim() && cleTemps(b).trim() && cleTemps(n) < cleTemps(b))
+    al += `<div class="note rouge">Le fichier déposé a été imprimé <b>avant</b> la référence. Les deux versions sont peut-être inversées.</div>`;
+  if(b.listing && n.listing && b.listing !== n.listing)
+    al += `<div class="note ambre">Listings différents : ${ech(b.listing)} contre ${ech(n.listing)}.</div>`;
+  $("alertes").innerHTML = al;
+
+  $("enteteImpression").innerHTML = `<h2>Écarts listing ${ech(n.listing || "104")} — chargement ${ech(n.laadDe || "")}</h2>
+    <p>Version du ${ech(n.print)} à ${ech(n.heure)}, comparée à celle du ${ech(b.print)} à ${ech(b.heure)}</p>`;
+
+  afficherEcarts(ecarts, b, n);
+  const texte = resume(ecarts, n, b);
+  $("recap").textContent = texte;
+
+  $("actions").innerHTML = `
+    <button class="btn plein" id="btnRef">Définir comme nouvelle référence</button>
+    <button class="btn" id="btnImprimer">Imprimer la fiche</button>
+    <button class="btn" id="btnImprimerRecap">Imprimer le récap</button>
+    <button class="btn" id="btnCopier">Copier le récap</button>
+    <span class="nomfichier" id="msgAction"></span>`;
+  $("btnRef").onclick = ()=>{
+    const h = histoire(); h.unshift(courant);
+    enregistrer(h); baseAdHoc = null; majRef();
+    $("msgAction").textContent = stockageOK ? "Référence mise à jour." : "Référence mise à jour (le temps de l'onglet).";
+  };
+  const imprimer = mode => { document.body.dataset.impression = mode; window.print(); };
+  $("btnImprimer").onclick = ()=> imprimer("fiche");
+  $("btnImprimerRecap").onclick = ()=> imprimer("recap");
+  $("btnCopier").onclick = ()=>{
+    navigator.clipboard.writeText(texte).then(
+      ()=> $("msgAction").textContent = "Résumé copié.",
+      ()=> $("msgAction").textContent = "Copie impossible, sélectionne le texte à la main."
+    );
+  };
+  $("resultat").classList.remove("cache");
+  try{
+    const doux = !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    $("resultat").scrollIntoView({behavior: doux ? "smooth" : "auto", block:"start"});
+  }catch(e){ /* navigateur sans scrollIntoView paramétrable */ }
+}
+
+function resume(ecarts, n, b){
+  const aj = ecarts.filter(e=>e.type==="ajout"), re = ecarts.filter(e=>e.type==="retrait"),
+        mo = ecarts.filter(e=>e.type==="modif"), pr = ecarts.filter(e=>e.type==="prod");
+  const solde = {};
+  ecarts.forEach(e=>{ const d = deltaDe(e); if(d) solde[e.l.unite] = (solde[e.l.unite]||0) + d; });
+
+  const L = [];
+  L.push(`Écarts listing ${n.listing || "104"} — chargement ${n.laadDe}`);
+  L.push(`Version du ${n.print} à ${n.heure}, comparée à celle du ${b.print} à ${b.heure}`);
+  L.push(`${aj.length} ajout(s) · ${re.length} retrait(s) · ${mo.length} modification(s)` +
+         (Object.keys(solde).length ? ` · solde ${Object.entries(solde).map(([u,v])=>`${signe(v)} ${u}`).join(" / ")}` : ""));
+
+  const ident = l => `${l.article} ${l.libelle} — ${l.client} (commande ${l.ordre})`;
+  const suffixe = l => [l.site ? `produit à ${l.site}` : "", l.notes.join(" · ")].filter(Boolean).join(" — ");
+  const ajout = (t, tab) => { if(tab.length){ L.push(""); L.push(t); tab.forEach(f=>L.push("  " + f)); } };
+
+  ajout("AJOUTS", aj.map(e=>{
+    const s = suffixe(e.l);
+    return `${signe(e.l.commande)} ${e.l.unite} — ${ident(e.l)}` + (s ? ` [${s}]` : "");
+  }));
+
+  ajout("RETRAITS", re.map(e=> `${signe(-e.l.commande)} ${e.l.unite} — ${ident(e.l)} (était ${fmt(e.l.commande)} ${e.l.unite})`));
+
+  ajout("MODIFICATIONS", mo.map(e=>{
+    const q = e.ch.find(c=>c.c === "commande");
+    const autres = e.ch.filter(c=>c.c !== "commande")
+      .map(c=>`${LIB_CHAMP[c.c].toLowerCase()} ${c.de} → ${c.a}`).join(", ");
+    const tete = q ? `${signe(q.a - q.de)} ${e.l.unite}` : "  =   ";
+    const detail = q ? `${fmt(q.de)} → ${fmt(q.a)} ${e.l.unite}` : "";
+    return `${tete} — ${ident(e.l)}` + (detail ? ` : ${detail}` : "") + (autres ? ` : ${autres}` : "");
+  }));
+
+  ajout("AVANCEMENT PRODUCTION (commande inchangée)", pr.map(e=>{
+    const c = e.ch[0];
+    return `${ident(e.l)} : reste à produire ${fmt(c.de)} → ${fmt(c.a)} ${e.l.unite}`;
+  }));
+
+  if(!aj.length && !re.length && !mo.length){ L.push(""); L.push("Aucun écart de commande entre les deux versions."); }
+  return L.join("\n");
+}
+
+/* ---------- entrées ---------- */
+async function traiter(lignes, nom, commeBase){
+  const doc = analyser(lignes);
+  if(!doc.lignes.length){
+    etat("Aucune ligne de commande reconnue. Si le PDF vient d'un scan, il n'a pas de couche texte : réimprime le listing en PDF depuis l'ERP.", "ambre");
+    return;
+  }
+  const paquet = empaqueter(doc, nom);
+  if(commeBase){
+    baseAdHoc = paquet;
+    etat(`Base de comparaison chargée : ${ech(nom)} — ${doc.lignes.length} lignes.`, "verte");
+    if(courant) lancer();
+    return;
+  }
+  courant = paquet;
+  $("cptNew").textContent = `${doc.lignes.length} lignes`;
+  apercu(doc, nom);
+  const h = histoire();
+  if(!h.length){
+    h.unshift(paquet);
+    enregistrer(h);
+    majRef();
+    etat(`Version gardée comme référence. Dépose maintenant la version mise à jour — ou le même fichier pour vérifier que la comparaison tourne (elle doit annoncer zéro écart).`, "verte");
+    $("resultat").classList.add("cache");
+    return;
+  }
+  etat("");
+  lancer();
+}
+
+async function lireFichier(f, commeBase){
+  if(!f) return;
+  if(!/\.pdf$/i.test(f.name)){ etat("Il faut le PDF du listing, pas un autre format.", "ambre"); return; }
+  etat(`<span class="tourne"></span>Lecture de ${ech(f.name)}…`, "bleue");
+  try{ await traiter(await pdfEnLignes(f), f.name, commeBase); }
+  catch(e){ console.error(e); etat("Lecture impossible : " + ech(e.message || e), "rouge"); }
+}
+
+const depot = $("depot");
+depot.onclick = ()=> $("fichier").click();
+depot.onkeydown = e=>{ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); $("fichier").click(); } };
+["dragenter","dragover"].forEach(ev=> depot.addEventListener(ev, e=>{ e.preventDefault(); depot.classList.add("survol"); }));
+["dragleave","drop"].forEach(ev=> depot.addEventListener(ev, e=>{ e.preventDefault(); depot.classList.remove("survol"); }));
+depot.addEventListener("drop", e=> lireFichier(e.dataTransfer.files[0], false));
+$("fichier").onchange = e=>{ lireFichier(e.target.files[0], false); e.target.value = ""; };
+$("fichierBase").onchange = e=>{ lireFichier(e.target.files[0], true); e.target.value = ""; };
+$("btnColle").onclick = ()=>{
+  const t = $("colle").value.trim();
+  if(!t){ etat("Colle d'abord le texte du listing.", "ambre"); return; }
+  traiter(t.split("\n"), "texte collé", false);
+};
+$("btnDemo").onclick = demo;
+
+majRef();
+</script>
+</body>
+</html>
